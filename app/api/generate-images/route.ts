@@ -82,12 +82,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Attempt to persist the image to Supabase Storage and DB
+    // Attempt to persist the image to Supabase Storage and DB (always try to store)
     let publicUrl: string | null = null;
-    let finalImageUrl: string | null = (image as any)?.url ?? null;
+    let finalImageUrl: string | null = null;
     try {
       if (!supabase) {
         console.warn("Supabase env not configured; skipping save.");
+        // Fall back to returning remote URL if present
+        finalImageUrl = (image as any)?.url ?? null;
       } else {
         const sb: any = supabase as any;
         const bucket = process.env.SUPABASE_BUCKET || "images";
@@ -97,18 +99,39 @@ export async function POST(req: NextRequest) {
           .toString(36)
           .slice(2, 8)}.png`;
         const path = `${filename}`;
+        // Build a buffer either from base64 or by downloading the remote URL
+        let buffer: Buffer | null = null;
         if ((image as any)?.base64) {
-          const buffer = Buffer.from((image as any).base64, "base64");
-          const { error: uploadError } = await sb
-            .storage
-            .from(bucket)
-            .upload(path, buffer, { contentType: "image/png", upsert: false });
-          if (uploadError) {
-            throw uploadError;
+          buffer = Buffer.from((image as any).base64, "base64");
+        } else if ((image as any)?.url) {
+          try {
+            const resp = await fetch((image as any).url);
+            if (resp.ok) {
+              const arr = await resp.arrayBuffer();
+              buffer = Buffer.from(arr);
+            } else {
+              console.warn("Failed to fetch image URL for upload:", resp.status, await resp.text());
+            }
+          } catch (e) {
+            console.warn("Error fetching image URL for upload:", e);
           }
-          const { data: urlData } = sb.storage.from(bucket).getPublicUrl(path);
-          publicUrl = urlData?.publicUrl || null;
-          finalImageUrl = publicUrl || finalImageUrl;
+        }
+        if (buffer) {
+          const { error: uploadError } = await sb.storage.from(bucket).upload(path, buffer, {
+            contentType: "image/png",
+            upsert: false,
+          });
+          if (uploadError) {
+            console.warn("Supabase upload failed, will fall back to remote URL:", uploadError);
+          } else {
+            const { data: urlData } = sb.storage.from(bucket).getPublicUrl(path);
+            publicUrl = urlData?.publicUrl || null;
+            finalImageUrl = publicUrl || null;
+          }
+        }
+        // If we couldn't upload, fall back to provider URL if present
+        if (!finalImageUrl) {
+          finalImageUrl = (image as any)?.url ?? null;
         }
 
         // Insert DB row with prompt, image_url, created_at, and UUID/email for attribution
