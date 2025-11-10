@@ -13,7 +13,7 @@ import {
 } from "@/lib/provider-config";
 import { Suggestion } from "@/lib/suggestions";
 import { useImageGeneration } from "@/hooks/use-image-generation";
-import { Header } from "./Header";
+import { Header } from "@/components/Header";
 
 interface ProviderInstance {
   id: string;
@@ -167,4 +167,3 @@ export function ImagePlayground({
     </div>
   );
 }
-
