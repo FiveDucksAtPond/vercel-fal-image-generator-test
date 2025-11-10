@@ -64,7 +64,7 @@ export const Header = () => {
         <div className="flex items-center gap-3">
           <LoginModal />
           <Link href="/gallery" className="text-sm underline">My Gallery</Link>
-        <Link
+        {/* <Link
           href={`https://vercel.com/new/clone?project-name=Replicate+x+Vercel+Image+Generator&repository-name=vercel-replicate-image-generator&repository-url=https%3A%2F%2Fgithub.com%2Fvercel-labs%2Fvercel-fal-image-generator&demo-title=Replicate+x+Vercel+Image+Generator&demo-url=https%3A%2F%2Ffal-image-generator.vercel.app%2F&demo-description=An+open-source+AI+image+generation+app+template+built+with+Next.js%2C+the+AI+SDK+by+Vercel%2C+and+Replicate`}
           target="_blank"
         >
@@ -77,7 +77,7 @@ export const Header = () => {
           <Button size="iconSm" className="block sm:hidden">
             ▲
           </Button>
-        </Link>
+        </Link> */}
         </div>
       </div>
     </header>
