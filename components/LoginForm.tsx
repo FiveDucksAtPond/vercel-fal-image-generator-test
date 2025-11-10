@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 
 export function LoginForm() {
@@ -23,7 +23,39 @@ export function LoginForm() {
     } catch {}
   }
 
-  
+  // After magic-link redirect, hydrate session and upsert profile
+  useEffect(() => {
+    (async () => {
+      try {
+        if (!supabaseBrowser) return;
+        const { data } = await supabaseBrowser.auth.getUser();
+        const user_uuid = data?.user?.id as string | undefined;
+        const user_email = (data?.user as any)?.email as string | undefined;
+        if (user_uuid && user_email && step !== "done") {
+          try {
+            const res = await fetch("/api/auth/upsert-profile", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email: user_email, user_uuid }),
+            });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.error || "Failed to upsert profile");
+            if (typeof window !== "undefined") {
+              localStorage.setItem("userProfile", JSON.stringify(json));
+              window.dispatchEvent(new CustomEvent("user:login", { detail: json }));
+            }
+            setEmail(user_email);
+            setStep("done");
+          } catch (e) {
+            // Non-fatal; user is still authenticated
+            console.warn("post-login upsert failed", e);
+          }
+        }
+      } catch {}
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   const signInWithPassword = async () => {
     setError(null);
