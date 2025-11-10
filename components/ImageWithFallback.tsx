@@ -41,10 +41,10 @@ export function ImageWithFallback({ src, alt, className }: { src: string; alt: s
 
   const onError = async () => {
     // Decide if we should try a signed URL (only if the host matches our project)
-    let trySigned = false;
+    let trySigned = false as boolean;
     try {
       const h = new URL(src).hostname;
-      trySigned = CURRENT_SB_HOST && h === CURRENT_SB_HOST;
+      trySigned = Boolean(CURRENT_SB_HOST) && h === CURRENT_SB_HOST;
     } catch {}
 
     if (trySigned && !triedSigned) {
