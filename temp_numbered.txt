@@ -1,0 +1,282 @@
+   1 "use client";
+   2 import { useEffect, useState } from "react";
+   3 import { Button } from "@/components/ui/button";
+   4 
+   5 type Item = {
+   6   id: number;
+   7   image_url: string;
+   8   prompt: string | null;
+   9   created_at: string;
+  10 };
+  11 
+  12 export function HomeGallery() {
+  13   const [items, setItems] = useState<Item[]>([]);
+  14   const [loading, setLoading] = useState(false);
+  15   const [hasMore, setHasMore] = useState(true);
+  16   const pageSize = 90; // fetch a larger batch for marquee rows
+  17   const [viewportWidth, setViewportWidth] = useState<number>(
+  18     typeof window !== "undefined" ? window.innerWidth : 1200,
+  19   );
+  20   const [mounted, setMounted] = useState(false);
+  21   const [modalIndex, setModalIndex] = useState<number | null>(null);
+  22 
+  23   const load = async (nextPage: number) => {
+  24     if (loading || !hasMore) return;
+  25     setLoading(true);
+  26     try {
+  27       let profile: any = null;
+  28       try {
+  29         const raw = localStorage.getItem("userProfile");
+  30         if (raw) profile = JSON.parse(raw);
+  31       } catch {}
+  32       const user_uuid = profile?.user_uuid;
+  33       const payload: any = { limit: pageSize, page: nextPage };
+  34       if (user_uuid) payload.user_uuid = user_uuid;
+  35       const res = await fetch("/api/images/list", {
+  36         method: "POST",
+  37         headers: { "Content-Type": "application/json" },
+  38         body: JSON.stringify(payload),
+  39       });
+  40       const json = await res.json();
+  41       if (!res.ok) throw new Error(json.error || "Failed to load images");
+  42       const next: Item[] = json.items || [];
+  43       setItems((prev) => (nextPage === 0 ? next : [...prev, ...next]));
+  44       setHasMore(Boolean(json.hasMore));
+  45     } catch (e) {
+  46       console.warn(e);
+  47     } finally {
+  48       setLoading(false);
+  49     }
+  50   };
+  51 
+  52   useEffect(() => {
+  53     load(0);
+  54     // eslint-disable-next-line react-hooks/exhaustive-deps
+  55   }, []);
+  56 
+  57   useEffect(() => {
+  58     if (typeof window === "undefined") return;
+  59     const onResize = () => setViewportWidth(window.innerWidth);
+  60     window.addEventListener("resize", onResize);
+  61     return () => window.removeEventListener("resize", onResize);
+  62   }, []);
+  63 
+  64   // Ensure SSR/CSR markup match to avoid hydration warnings
+  65   useEffect(() => {
+  66     setMounted(true);
+  67   }, []);
+  68 
+  69   // Keyboard navigation for modal
+  70   useEffect(() => {
+  71     if (modalIndex === null) return;
+  72     const handler = (e: KeyboardEvent) => {
+  73       if (e.key === "Escape") setModalIndex(null);
+  74       if (e.key === "ArrowLeft") {
+  75         setModalIndex((prev) => {
+  76           if (prev === null) return prev;
+  77           return (prev + uniqueItems.length - 1) % uniqueItems.length;
+  78         });
+  79       }
+  80       if (e.key === "ArrowRight") {
+  81         setModalIndex((prev) => {
+  82           if (prev === null) return prev;
+  83           return (prev + 1) % uniqueItems.length;
+  84         });
+  85       }
+  86     };
+  87     window.addEventListener("keydown", handler);
+  88     return () => window.removeEventListener("keydown", handler);
+  89   }, [modalIndex]);
+  90 
+  91   if (!mounted) {
+  92     return <div className="w-full h-40" />; // SSR-safe placeholder
+  93   }
+  94 
+  95   if (!items.length && !loading) {
+  96     return (
+  97       <div className="text-sm text-muted-foreground text-center">
+  98         No images found.
+  99       </div>
+ 100     );
+ 101   }
+ 102 
+ 103   // If we ended with fewer than 10 items, loop them to create a fuller set
+ 104   const displayItems: Item[] = (() => {
+ 105     if (items.length === 0) return items;
+ 106     if (hasMore || items.length >= 10) return items;
+ 107     const repeats = Math.min(5, Math.ceil(10 / items.length));
+ 108     const cloned: Item[] = [];
+ 109     for (let r = 0; r < repeats; r++) {
+ 110       for (let i = 0; i < items.length; i++) {
+ 111         const it = items[i];
+ 112         cloned.push({ ...it, id: Number(`${it.id}${r}${i}`) });
+ 113       }
+ 114     }
+ 115     return cloned;
+ 116   })();
+ 117 
+ 118   // Build three marquee rows by distributing items across rows and backfilling
+ 119   const rows: Item[][] = (() => {
+ 120     const base: Item[][] = [[], [], []];
+ 121     displayItems.forEach((it, idx) => {
+ 122       base[idx % 3].push(it);
+ 123     });
+ 124 
+ 125     const ITEM_WIDTH = 192; // w-48 => 12rem => 192px
+ 126     const GAP = 8; // gap-2 => 0.5rem => 8px
+ 127     const minPerRow = Math.max(
+ 128       8,
+ 129       Math.ceil((viewportWidth + 256) / (ITEM_WIDTH + GAP)) + 1,
+ 130     );
+ 131 
+ 132     const backfilled = base.map((row) => {
+ 133       if (row.length >= minPerRow) return row;
+ 134       const out = [...row];
+ 135       // Randomly pick additional items from the full set until reaching minPerRow
+ 136       const pool = displayItems.length ? displayItems : row;
+ 137       while (out.length < minPerRow && pool.length) {
+ 138         const pick = pool[Math.floor(Math.random() * pool.length)];
+ 139         out.push(pick);
+ 140       }
+ 141       return out;
+ 142     });
+ 143     return backfilled;
+ 144   })();
+ 145 
+ 146   // Create a unique ordered list of items for modal navigation
+ 147   const uniqueItems: Item[] = (() => {
+ 148     const seen = new Set<number>();
+ 149     const out: Item[] = [];
+ 150     for (const it of displayItems) {
+ 151       if (!seen.has(it.id)) {
+ 152         seen.add(it.id);
+ 153         out.push(it);
+ 154       }
+ 155     }
+ 156     return out;
+ 157   })();
+ 158 
+ 159   const Row = ({ data, direction, speed }: { data: Item[]; direction: "left" | "right"; speed: number }) => {
+ 160     // Duplicate the content for seamless looping
+ 161     const dup = [...data, ...data];
+ 162     return (
+ 163       <div className="marquee-row marquee-fade-edges py-2">
+ 164         <div
+ 165           className={`marquee-track ${direction === "left" ? "animate-marquee-left" : "animate-marquee-right"}`}
+ 166           style={{
+ 167             // @ts-ignore - CSS var for animation speed
+ 168             "--marquee-speed": `${speed}s`,
+ 169           }}
+ 170         >
+ 171           {dup.map((it, i) => (
+ 172             <figure
+ 173               key={`${it.id}-${i}`}
+ 174               className="relative group cursor-zoom-in pointer-events-auto"
+ 175               onClick={() => {
+ 176                 const idx = uniqueItems.findIndex((x) => x.id === it.id);
+ 177                 if (idx >= 0) setModalIndex(idx);
+ 178               }}
+ 179             >
+ 180               {/* eslint-disable-next-line @next/next/no-img-element */}
+ 181               <img
+ 182                 src={it.image_url}
+ 183                 alt={it.prompt || "generated image"}
+ 184                 className="w-48 h-36 object-cover rounded-lg border select-none"
+ 185                 onClick={() => {
+ 186                   const idx = uniqueItems.findIndex((x) => x.id === it.id);
+ 187                   if (idx >= 0) setModalIndex(idx);
+ 188                 }}
+ 189                 loading="lazy"
+ 190               />
+ 191               {it.prompt && (
+ 192                 <figcaption className="absolute inset-x-0 bottom-0 text-[10px] leading-tight bg-black/40 text-white px-1 py-0.5 rounded-b-lg opacity-0 group-hover:opacity-100 transition-opacity">
+ 193                   {it.prompt}
+ 194                 </figcaption>
+ 195               )}
+ 196             </figure>
+ 197           ))}
+ 198         </div>
+ 199       </div>
+ 200     );
+ 201   };
+ 202 
+ 203   return (
+ 204     <div className="w-full">
+ 205       <Row data={rows[0]} direction="left" speed={70} />
+ 206       <Row data={rows[1]} direction="right" speed={60} />
+ 207       <Row data={rows[2]} direction="left" speed={65} />
+ 208       {loading && (
+ 209         <div className="h-10 flex items-center justify-center text-xs text-muted-foreground">Loading...</div>
+ 210       )}
+ 211 
+ 212       {modalIndex !== null && uniqueItems[modalIndex] && (
+ 213         <div
+ 214           className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4"
+ 215           onClick={() => setModalIndex(null)}
+ 216         >
+ 217           <div
+ 218             className="panel-dark relative w-full max-w-5xl max-h-[90vh] p-4 md:p-6 overflow-hidden"
+ 219             onClick={(e) => e.stopPropagation()}
+ 220           >
+ 221             {/* Back button */}
+ 222             <div className="absolute top-3 left-3 flex gap-2">
+ 223               <Button
+ 224                 size="sm"
+ 225                 className="bg-white/10 border border-white/20 text-white hover:bg-white/20"
+ 226                 onClick={() => setModalIndex(null)}
+ 227               >
+ 228                 Back
+ 229               </Button>
+ 230             </div>
+ 231 
+ 232             {/* Prev/Next */}
+ 233             <button
+ 234               aria-label="Previous"
+ 235               className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 border border-white/20"
+ 236               onClick={() =>
+ 237                 setModalIndex((prev) => {
+ 238                   if (prev === null) return prev;
+ 239                   return (prev + uniqueItems.length - 1) % uniqueItems.length;
+ 240                 })
+ 241               }
+ 242             >
+ 243               ‹
+ 244             </button>
+ 245             <button
+ 246               aria-label="Next"
+ 247               className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 border border-white/20"
+ 248               onClick={() =>
+ 249                 setModalIndex((prev) => {
+ 250                   if (prev === null) return prev;
+ 251                   return (prev + 1) % uniqueItems.length;
+ 252                 })
+ 253               }
+ 254             >
+ 255               ›
+ 256             </button>
+ 257 
+ 258             {/* Image */}
+ 259             <div className="flex flex-col items-center gap-3 mt-6">
+ 260               {/* eslint-disable-next-line @next/next/no-img-element */}
+ 261               <img
+ 262                 src={uniqueItems[modalIndex].image_url}
+ 263                 alt={uniqueItems[modalIndex].prompt || "generated image"}
+ 264                 className="max-h-[64vh] w-auto max-w-full object-contain rounded-md"
+ 265               />
+ 266               {uniqueItems[modalIndex].prompt && (
+ 267                 <div className="w-full">
+ 268                   <div className="text-xs uppercase tracking-wide text-white/70 mb-1">
+ 269                     Prompt
+ 270                   </div>
+ 271                   <div className="text-sm text-white/90">
+ 272                     {uniqueItems[modalIndex].prompt}
+ 273                   </div>
+ 274                 </div>
+ 275               )}
+ 276             </div>
+ 277           </div>
+ 278         </div>
+ 279       )}
+ 280     </div>
+ 281   );
+ 282 }

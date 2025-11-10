@@ -9,7 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@ai-sdk/fal": "^0.0.9",
+    "@ai-sdk/replicate": "^1.0.17",
+    "zod": "^3.25.76",
+    "@supabase/supabase-js": "^2.45.0",
     "@radix-ui/react-collapsible": "^1.1.2",
     "@radix-ui/react-label": "^2.1.1",
     "@radix-ui/react-scroll-area": "^1.2.2",

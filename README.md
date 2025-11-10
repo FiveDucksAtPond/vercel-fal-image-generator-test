@@ -1,82 +1,123 @@
-<a href="https://fal-image-generator.vercel.app">
-  <h1 align="center">Fal x Vercel Image Generator</h1>
-</a>
+<h1 align="center">Replicate × Vercel Image Generator</h1>
 
-<p align="center">
-  An open-source AI image generation app template built with Next.js, the AI SDK by Vercel, and Fal.
-</p>
+An AI image generation app built with Next.js (App Router), the Vercel AI SDK, and Replicate. This README documents everything required to run the project locally from scratch.
 
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#deploy-your-own"><strong>Deploy Your Own</strong></a> ·
-  <a href="#running-locally"><strong>Running Locally</strong></a> ·
-  <a href="#authors"><strong>Authors</strong></a>
-</p>
-<br/>
+Contents
+- Prerequisites
+- Environment Variables
+- Supabase Setup (Auth, DB, Storage)
+- Replicate Setup
+- Local Development
+- Optional: Vercel CLI workflow
+- Troubleshooting
 
-## Features
+## Prerequisites
+- Node.js 20 LTS (recommended) or >= 18.18
+- A package manager: pnpm (preferred), npm, or yarn
+- A Replicate account + API token
+- A Supabase project (for auth, image feed, and storage)
 
-- Supports image generation using [`generateImage`](https://sdk.vercel.ai/docs/reference/ai-sdk-core/generate-image) from the [AI SDK by Vercel](https://sdk.vercel.ai/docs), allowing multiple AI providers to be used interchangeably with just a few lines of code.
-- A single input to generate images across multiple models simultaneously.
-- [shadcn/ui](https://ui.shadcn.com/) components for a modern, responsive UI powered by [Tailwind CSS](https://tailwindcss.com).
-- Built with the latest [Next.js](https://nextjs.org) App Router (version 15).
+## Environment Variables
+Create a file named `.env.local` in the project root with the following keys.
 
-## Deploy Your Own
+Required
+- `REPLICATE_API_TOKEN` – your Replicate API token
+- `NEXT_PUBLIC_SUPABASE_URL` – your Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` – your Supabase anon key
+- `SUPABASE_SERVICE_ROLE_KEY` – your Supabase service role key (needed for dev signup, storage writes, and server reads)
 
-You can deploy your own version of the AI SDK Image Generator to Vercel by clicking the button below:
+Optional
+- `SUPABASE_BUCKET=images` – storage bucket name (defaults to `images`)
+- `NEXT_PUBLIC_DEV_SKIP_EMAIL_CONFIRM=true` – enables dev signup without email confirmation in the UI
+- `DEV_AUTH_SKIP_EMAIL_CONFIRM=true` – allows the dev create‑user API route
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?project-name=FAL+x+Vercel+Image+Generator&repository-name=vercel-fal-image-generator&repository-url=https%3A%2F%2Fgithub.com%2Fvercel-labs%2Fvercel-fal-image-generator&demo-title=FAL+x+Vercel+Image+Generator&demo-url=https%3A%2F%2Ffal-image-generator.vercel.app%2F&demo-description=An+open-source+AI+image+generation+app+template+built+with+Next.js%2C+the+AI+SDK+by+Vercel%2C+and+FAL&products=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22ai%22%2C%22productSlug%22%3A%22fal%22%2C%22integrationSlug%22%3A%22fal%22%7D%5D)
+Example `.env.local`:
 
-## Running Locally
+```
+REPLICATE_API_TOKEN=your_replicate_token
 
-1. Clone the repository and install dependencies:
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+SUPABASE_BUCKET=images
 
-   ```bash
-   npm install
-   # or
-   yarn install
-   # or
-   pnpm install
-   ```
+NEXT_PUBLIC_DEV_SKIP_EMAIL_CONFIRM=true
+DEV_AUTH_SKIP_EMAIL_CONFIRM=true
+```
 
-2. Install the [Vercel CLI](https://vercel.com/docs/cli):
+## Supabase Setup (Auth, DB, Storage)
+1) Create a Supabase project at https://supabase.com and retrieve:
+   - Project URL → `NEXT_PUBLIC_SUPABASE_URL`
+   - anon key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - service role key → `SUPABASE_SERVICE_ROLE_KEY`
 
-   ```bash
-   npm i -g vercel
-   # or
-   yarn global add vercel
-   # or
-   pnpm install -g vercel
-   ```
+2) Enable Email/Password auth (default) in Authentication → Providers.
 
-   Once installed, link your local project to your Vercel project:
+3) Create tables for profiles and images. In the Supabase SQL editor, run:
 
-   ```bash
-   vercel link
-   ```
+```
+-- Stores a user’s email + UUID for convenience in the app
+create table if not exists public.user_profiles (
+  id bigserial primary key,
+  user_uuid uuid unique not null,
+  email text unique not null,
+  created_at timestamptz not null default now()
+);
 
-   After linking, pull your environment variables:
+-- Stores generated images for both community and user galleries
+create table if not exists public.user_generated_images (
+  id bigserial primary key,
+  uuid uuid null,                 -- user UUID (nullable for anonymous rows)
+  image_url text not null,
+  prompt text null,
+  created_at timestamptz not null default now()
+);
+```
 
-   ```bash
-   vercel env pull
-   ```
+Notes
+- Row Level Security can remain enabled; server uses the service role key for reads/writes.
+- The app queries the `uuid` column for “My Gallery”. Keep that exact column name.
 
-   This will create a `.env.local` file with all the necessary environment variables.
+4) Create a public storage bucket (optional; code will attempt to create it):
+   - Storage → Create bucket → name: `images` → Public
 
-3. Run the development server:
+## Replicate Setup
+1) Create an account at https://replicate.com
+2) Create an API token and set `REPLICATE_API_TOKEN` in `.env.local`.
 
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   # or
-   pnpm dev
-   ```
+## Local Development
+1) Install dependencies
+   - `pnpm install`
+   - or `npm install`
 
-4. Open [http://localhost:3000](http://localhost:3000) to view your new AI chatbot application.
+2) Start the dev server (port 3000)
+   - `pnpm dev`
+   - or `npm run dev`
+   - Open http://localhost:3000
 
-## Authors
+3) Sign up / Sign in
+   - With `NEXT_PUBLIC_DEV_SKIP_EMAIL_CONFIRM=true` and `DEV_AUTH_SKIP_EMAIL_CONFIRM=true`, you can create a user in dev mode via the “Create account” button (uses the Admin API; requires `SUPABASE_SERVICE_ROLE_KEY`).
+   - Otherwise, use normal email confirmation flow; then sign in.
 
-This repository is maintained by the [Vercel](https://vercel.com) team and community contributors.
+4) Generate images
+   - Enter a prompt and submit. Images appear in the output area and are saved to Supabase (if configured) and show up in:
+     - Community Creations (homepage feed)
+     - My Gallery (`/gallery`) for the signed‑in user
 
-Contributions are welcome! Feel free to open issues or submit pull requests to enhance functionality or fix bugs.
+5) Optional: Background image
+   - Place your background at `public/background.png` to set a full‑page background (already wired in CSS).
+
+## Optional: Vercel CLI workflow
+If you prefer managing environment variables via Vercel:
+- `npm i -g vercel` (or `pnpm i -g vercel`)
+- `vercel link` → link to your Vercel project
+- `vercel env pull` → writes `.env.local`
+
+## Troubleshooting
+- Hydration warnings: first paint uses an SSR‑safe placeholder for galleries; reload after setting env vars.
+- “Supabase not configured”: ensure all Supabase env vars are set, especially `SUPABASE_SERVICE_ROLE_KEY`.
+- Dev signup fails: confirm `NEXT_PUBLIC_DEV_SKIP_EMAIL_CONFIRM=true`, `DEV_AUTH_SKIP_EMAIL_CONFIRM=true`, and that the service role key is present.
+- Community/My Gallery empty: verify the SQL tables exist and `user_generated_images.uuid` is populated. New images are saved server‑side after generation.
+
+Contributions are welcome. Feel free to open issues or PRs.
+

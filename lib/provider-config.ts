@@ -1,4 +1,4 @@
-export type ProviderKey = "fal";
+export type ProviderKey = "replicate";
 export type ModelMode = "performance" | "quality";
 
 export const PROVIDERS: Record<
@@ -10,31 +10,28 @@ export const PROVIDERS: Record<
     models: string[];
   }
 > = {
-  fal: {
-    displayName: "Fal",
-    iconPath: "/provider-icons/fal.svg",
-    color: "from-orange-500 to-red-500",
+  replicate: {
+    displayName: "Replicate",
+    iconPath: "/provider-icons/replicate.svg",
+    color: "from-blue-500 to-cyan-500",
     models: [
-      "fal-ai/flux/dev",
-      "fal-ai/fast-sdxl",
-      "fal-ai/flux-pro/v1.1-ultra",
-      "fal-ai/ideogram/v2",
-      "fal-ai/recraft-v3",
-      "fal-ai/hyper-sdxl",
+      "black-forest-labs/flux-schnell",
+      "stability-ai/sdxl",
+      "black-forest-labs/flux-1.1-pro",
     ],
   },
 };
 
 export const MODEL_CONFIGS: Record<ModelMode, Record<ProviderKey, string>> = {
   performance: {
-    fal: "fal-ai/fast-sdxl",
+    replicate: "black-forest-labs/flux-schnell",
   },
   quality: {
-    fal: "fal-ai/flux-pro/v1.1-ultra",
+    replicate: "black-forest-labs/flux-1.1-pro",
   },
 };
 
-export const PROVIDER_ORDER: ProviderKey[] = ["fal"];
+export const PROVIDER_ORDER: ProviderKey[] = ["replicate"];
 
 export const initializeProviderRecord = <T>(defaultValue?: T) =>
   Object.fromEntries(

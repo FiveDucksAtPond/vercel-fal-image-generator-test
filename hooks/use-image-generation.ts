@@ -43,6 +43,19 @@ export function useImageGeneration(): UseImageGenerationReturn {
     prompt: string,
     providerInstances: ProviderInstance[]
   ) => {
+    // Enforce login: must have userProfile in localStorage
+    let profile: { email?: string; user_uuid?: string } | null = null;
+    if (typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem("userProfile");
+        if (raw) profile = JSON.parse(raw);
+      } catch {}
+    }
+    if (!profile?.email || !profile?.user_uuid) {
+      setErrors([{ provider: providerInstances[0]?.provider ?? "replicate", message: "Please log in to generate images." }]);
+      setIsLoading(false);
+      return;
+    }
     setActivePrompt(prompt);
     try {
       setIsLoading(true);
@@ -79,10 +92,24 @@ export function useImageGeneration(): UseImageGenerationReturn {
           `Generate image request [provider=${provider}, instanceId=${instanceId}, modelId=${model}]`,
         );
         try {
+          let user_email: string | undefined = undefined;
+          let user_uuid: string | undefined = undefined;
+          if (typeof window !== "undefined") {
+            try {
+              const raw = localStorage.getItem("userProfile");
+              if (raw) {
+                const parsed = JSON.parse(raw);
+                user_email = parsed?.email;
+                user_uuid = parsed?.user_uuid;
+              }
+            } catch {}
+          }
+
           const request = {
             prompt,
             provider,
             modelId: model,
+            ...(user_email && user_uuid ? { user_email, user_uuid } : {}),
           };
 
           const response = await fetch("/api/generate-images", {

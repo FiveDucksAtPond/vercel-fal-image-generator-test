@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "./ui/button";
+import { LoginModal } from "@/components/LoginModal";
 
 export const Header = () => {
   return (
@@ -51,7 +52,7 @@ export const Header = () => {
                 <Link
                   className="flex flex-row items-end gap-2"
                   target="_blank"
-                  href="https://fal.ai"
+                  href="https://replicate.com"
                 >
                   <FalIcon size={18} />
                 </Link>
@@ -60,8 +61,11 @@ export const Header = () => {
             </span>
           </div>
         </div>
+        <div className="flex items-center gap-3">
+          <LoginModal />
+          <Link href="/gallery" className="text-sm underline">My Gallery</Link>
         <Link
-          href={`https://vercel.com/new/clone?project-name=FAL+x+Vercel+Image+Generator&repository-name=vercel-fal-image-generator&repository-url=https%3A%2F%2Fgithub.com%2Fvercel-labs%2Fvercel-fal-image-generator&demo-title=FAL+x+Vercel+Image+Generator&demo-url=https%3A%2F%2Ffal-image-generator.vercel.app%2F&demo-description=An+open-source+AI+image+generation+app+template+built+with+Next.js%2C+the+AI+SDK+by+Vercel%2C+and+FAL&products=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22ai%22%2C%22productSlug%22%3A%22fal%22%2C%22integrationSlug%22%3A%22fal%22%7D%5D`}
+          href={`https://vercel.com/new/clone?project-name=Replicate+x+Vercel+Image+Generator&repository-name=vercel-replicate-image-generator&repository-url=https%3A%2F%2Fgithub.com%2Fvercel-labs%2Fvercel-fal-image-generator&demo-title=Replicate+x+Vercel+Image+Generator&demo-url=https%3A%2F%2Ffal-image-generator.vercel.app%2F&demo-description=An+open-source+AI+image+generation+app+template+built+with+Next.js%2C+the+AI+SDK+by+Vercel%2C+and+Replicate`}
           target="_blank"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -74,6 +78,7 @@ export const Header = () => {
             ▲
           </Button>
         </Link>
+        </div>
       </div>
     </header>
   );

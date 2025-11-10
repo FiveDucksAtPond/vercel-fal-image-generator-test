@@ -42,11 +42,18 @@ export function ImageCarousel({
     });
   }, [api]);
 
+  const availableProviders = providers.filter((provider) => {
+    const img = images?.find((i) => i.provider === provider)?.image;
+    return Boolean(img);
+  });
+
+  if (availableProviders.length === 0) return null;
+
   return (
     <div className="relative w-full">
       <Carousel setApi={setApi} opts={{ align: "start", loop: true }}>
         <CarouselContent>
-          {providers.map((provider, i) => {
+          {availableProviders.map((provider, i) => {
             const imageData = images?.find(
               (img) => img.provider === provider,
             )?.image;
@@ -66,7 +73,7 @@ export function ImageCarousel({
                   enabled={enabledProviders[provider]}
                 />
                 <div className="text-center text-sm text-muted-foreground mt-4">
-                  {i + 1} of {providers.length}
+                  {i + 1} of {availableProviders.length}
                 </div>
               </CarouselItem>
             );
@@ -80,7 +87,7 @@ export function ImageCarousel({
       {/* Dot Indicators */}
       <div className="absolute -bottom-6 left-0 right-0">
         <div className="flex justify-center gap-1">
-          {providers.map((_, index) => (
+          {availableProviders.map((_, index) => (
             <button
               key={index}
               className={cn(

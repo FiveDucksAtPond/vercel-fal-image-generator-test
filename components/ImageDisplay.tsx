@@ -79,13 +79,13 @@ export function ImageDisplay({
     <>
       <div
         className={cn(
-          "relative w-full aspect-square group bg-zinc-50 rounded-lg",
+          "relative w-full aspect-square group bg-black/30 rounded-lg border border-white/10",
           image && !failed && "cursor-pointer",
-          (!image || failed) && "border-1 border-zinc-100",
+          (!image || failed) && "",
         )}
         onClick={handleImageClick}
       >
-        {(image || failed) && (
+        {image && (
           <div className="absolute top-2 left-2 max-w-[75%] bg-white/95 px-2 py-1 flex items-center gap-2 rounded-lg">
             <TooltipProvider>
               <Tooltip delayDuration={100}>

@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { imageHelpers } from "@/lib/image-helpers";
-import { falAILogo } from "@/lib/logos";
+import { ReplicateIcon } from "@/lib/logos";
 import { ProviderKey } from "@/lib/provider-config";
 import { cn } from "@/lib/utils";
 import {
@@ -33,7 +33,7 @@ interface ModelSelectProps {
 }
 
 const PROVIDER_LINKS = {
-  fal: "fal",
+  replicate: "replicate",
 } as const;
 
 export function ModelSelect({
@@ -47,13 +47,16 @@ export function ModelSelect({
   failed,
   modelId,
 }: ModelSelectProps) {
-  const Icon = falAILogo;
+  const Icon = ReplicateIcon;
 
   return (
     <Card
-      className={cn(`w-full transition-opacity`, enabled ? "" : "opacity-50")}
+      className={cn(
+        `panel-dark w-full transition-opacity`,
+        enabled ? "" : "opacity-50"
+      )}
     >
-      <CardContent className="pt-6 h-full">
+      <CardContent className="pt-6 h-full text-white">
         <div className="flex items-center justify-between gap-2 mb-4">
           <div className="flex items-center gap-2 w-full transition-opacity duration-200">
             <div className="bg-primary p-2 rounded-full">
@@ -79,7 +82,7 @@ export function ModelSelect({
                 }
                 target="_blank"
               >
-                <h3 className="font-semibold text-lg">{providerKey}</h3>
+                <h3 className="font-semibold text-lg text-white capitalize">{providerKey}</h3>
               </Link>
               <div className="flex justify-between items-center w-full">
                 <Select
@@ -89,13 +92,13 @@ export function ModelSelect({
                     onChange(selectedValue, providerKey)
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-black/40 border-white/10 text-white placeholder:text-zinc-300">
                     <SelectValue placeholder={value || "Select a model"} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-zinc-900 text-white border-white/10">
                     <SelectGroup>
                       {models.map((model) => (
-                        <SelectItem key={model} value={model} className="">
+                        <SelectItem key={model} value={model} className="text-white focus:bg-white/10">
                           <span className="hidden xl:inline">
                             {imageHelpers.formatModelId(model).length > 30
                               ? imageHelpers.formatModelId(model).slice(0, 30) +

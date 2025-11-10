@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowUpRight, ArrowUp, RefreshCw } from "lucide-react";
 import { getRandomSuggestions, Suggestion } from "@/lib/suggestions";
 import { Spinner } from "@/components/ui/spinner";
@@ -24,6 +24,35 @@ export function PromptInput({
 }: PromptInputProps) {
   const [input, setInput] = useState("");
   const [suggestions, setSuggestions] = useState<Suggestion[]>(initSuggestions);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = localStorage.getItem("userProfile");
+      if (!raw) return setIsLoggedIn(false);
+      const p = JSON.parse(raw);
+      setIsLoggedIn(Boolean(p?.email && p?.user_uuid));
+    } catch {
+      setIsLoggedIn(false);
+    }
+    const onLogin = (e: Event) => {
+      try {
+        const raw = localStorage.getItem("userProfile");
+        const p = raw ? JSON.parse(raw) : null;
+        setIsLoggedIn(Boolean(p?.email && p?.user_uuid));
+      } catch {
+        setIsLoggedIn(true);
+      }
+    };
+    const onLogout = () => setIsLoggedIn(false);
+    window.addEventListener("user:login", onLogin as EventListener);
+    window.addEventListener("user:logout", onLogout as EventListener);
+    return () => {
+      window.removeEventListener("user:login", onLogin as EventListener);
+      window.removeEventListener("user:logout", onLogout as EventListener);
+    };
+  }, []);
 
   const updateSuggestions = () => {
     setSuggestions(getRandomSuggestions());
@@ -34,6 +63,12 @@ export function PromptInput({
   };
 
   const handleSubmit = () => {
+    if (!isLoggedIn) {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("open-login"));
+      }
+      return;
+    }
     if (!isLoading && input.trim()) {
       onSubmit(input);
     }
@@ -46,6 +81,12 @@ export function PromptInput({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
+      if (!isLoggedIn) {
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("open-login"));
+        }
+        return;
+      }
       if (!isLoading && input.trim()) {
         onSubmit(input);
       }
@@ -53,16 +94,28 @@ export function PromptInput({
   };
 
   return (
-    <div className="w-full mb-8">
-      <div className="bg-zinc-50 rounded-xl p-4">
+    <div className="w-full mb-8 max-w-4xl mx-auto">
+      <div className="relative overflow-hidden rounded-2xl p-8 text-white bg-gradient-to-b from-zinc-900 to-black border border-white/10 ring-1 ring-white/10 shadow-xl shadow-black/40">
+        <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-transparent" />
+        {!isLoggedIn && (
+          <div className="mb-3 text-sm text-blue-700 bg-blue-50 border border-blue-200 rounded px-3 py-2 flex items-center justify-between">
+            <span>You must log in to generate images.</span>
+            <button
+              className="px-2 py-1 border rounded text-xs"
+              onClick={() => typeof window !== "undefined" && window.dispatchEvent(new Event("open-login"))}
+            >
+              Log in
+            </button>
+          </div>
+        )}
         <div className="flex flex-col gap-3">
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Enter your prompt here"
-            rows={3}
-            className="text-base bg-transparent border-none p-0 resize-none placeholder:text-zinc-500 text-[#111111] focus-visible:ring-0 focus-visible:ring-offset-0"
+            rows={6}
+            className="text-lg md:text-xl leading-relaxed bg-transparent border-none p-0 resize-none placeholder:text-zinc-300 text-white focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[10rem]"
           />
           <div className="flex items-center justify-between pt-1">
             <div className="flex items-center justify-between space-x-2">
@@ -84,9 +137,9 @@ export function PromptInput({
                         ? "hidden sm:flex"
                         : "",
                   )}
-                >
+                  >
                   <span>
-                    <span className="text-black text-xs sm:text-sm">
+                    <span className="text-zinc-900 text-xs sm:text-sm">
                       {suggestion.text.toLowerCase()}
                     </span>
                   </span>
