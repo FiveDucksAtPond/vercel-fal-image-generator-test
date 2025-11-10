@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { supabaseBrowser } from "@/lib/supabase-browser";
 import { ArrowUpRight, ArrowUp, RefreshCw } from "lucide-react";
 import { getRandomSuggestions, Suggestion } from "@/lib/suggestions";
 import { Spinner } from "@/components/ui/spinner";
@@ -36,6 +37,15 @@ export function PromptInput({
     } catch {
       setIsLoggedIn(false);
     }
+    // Also trust Supabase session directly (magic-link hydration)
+    (async () => {
+      try {
+        if (supabaseBrowser) {
+          const { data } = await supabaseBrowser.auth.getSession();
+          if (data?.session?.user) setIsLoggedIn(true);
+        }
+      } catch {}
+    })();
     const onLogin = (e: Event) => {
       try {
         const raw = localStorage.getItem("userProfile");
@@ -48,9 +58,14 @@ export function PromptInput({
     const onLogout = () => setIsLoggedIn(false);
     window.addEventListener("user:login", onLogin as EventListener);
     window.addEventListener("user:logout", onLogout as EventListener);
+    // Subscribe to Supabase auth changes as a fallback
+    const sub = supabaseBrowser?.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(Boolean(session?.user));
+    });
     return () => {
       window.removeEventListener("user:login", onLogin as EventListener);
       window.removeEventListener("user:logout", onLogout as EventListener);
+      try { sub && (sub as any).data?.subscription?.unsubscribe?.(); } catch {}
     };
   }, []);
 
