@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";\nimport { ImageWithFallback } from "@/components/ImageWithFallback";
+import { useEffect, useState } from "react";
+import { ImageWithFallback } from "@/components/ImageWithFallback";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 
@@ -213,5 +214,6 @@ export function GalleryGrid() {
     </div>
   );
 }
+
 
 

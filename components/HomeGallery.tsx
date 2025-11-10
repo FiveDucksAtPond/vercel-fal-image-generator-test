@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";\nimport { ImageWithFallback } from "@/components/ImageWithFallback";
+import { Button } from "@/components/ui/button";
+import { ImageWithFallback } from "@/components/ImageWithFallback";
 
 type Item = {
   id: number;
@@ -284,5 +285,6 @@ export function HomeGallery() {
     </div>
   );
 }
+
 
 
