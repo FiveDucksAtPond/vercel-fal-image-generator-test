@@ -17,6 +17,15 @@ function parseSupabasePublicUrl(url: string): { bucket: string; path: string } |
   return null;
 }
 
+const CURRENT_SB_HOST = (() => {
+  try {
+    const u = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL || "");
+    return u.hostname;
+  } catch {
+    return "";
+  }
+})();
+
 export function ImageWithFallback({ src, alt, className }: { src: string; alt: string; className?: string }) {
   const [currentSrc, setCurrentSrc] = useState(src);
   const [triedSigned, setTriedSigned] = useState(false);
@@ -31,7 +40,14 @@ export function ImageWithFallback({ src, alt, className }: { src: string; alt: s
   }, [src]);
 
   const onError = async () => {
-    if (!triedSigned) {
+    // Decide if we should try a signed URL (only if the host matches our project)
+    let trySigned = false;
+    try {
+      const h = new URL(src).hostname;
+      trySigned = CURRENT_SB_HOST && h === CURRENT_SB_HOST;
+    } catch {}
+
+    if (trySigned && !triedSigned) {
       setTriedSigned(true);
       try {
         const parsed = parseSupabasePublicUrl(src);
@@ -61,4 +77,3 @@ export function ImageWithFallback({ src, alt, className }: { src: string; alt: s
   // eslint-disable-next-line @next/next/no-img-element
   return <img src={currentSrc} alt={alt} className={className} onError={onError} />;
 }
-
