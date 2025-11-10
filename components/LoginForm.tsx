@@ -81,7 +81,8 @@ export function LoginForm() {
         return setError(e?.message || "Dev signup failed");
       }
     } else {
-      const redirectTo = typeof window !== "undefined" ? window.location.origin : undefined;
+      const siteUrlFromEnv = process.env.NEXT_PUBLIC_SITE_URL;
+      const redirectTo = siteUrlFromEnv || (typeof window !== "undefined" ? window.location.origin : undefined);
       const { data, error } = await supabaseBrowser.auth.signUp({
         email,
         password,
@@ -107,7 +108,8 @@ export function LoginForm() {
       setError("Client not configured");
       return;
     }
-    const redirectTo = typeof window !== "undefined" ? window.location.origin : undefined;
+    const siteUrlFromEnv = process.env.NEXT_PUBLIC_SITE_URL;
+    const redirectTo = siteUrlFromEnv || (typeof window !== "undefined" ? window.location.origin : undefined);
     const { error } = await supabaseBrowser.auth.resend({
       type: "signup",
       email,
