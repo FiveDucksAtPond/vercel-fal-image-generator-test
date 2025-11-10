@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Download, ImageIcon, AlertCircle, Share } from "lucide-react";
-import { Stopwatch } from "./Stopwatch";
+import { Stopwatch } from "@/components/Stopwatch";
 import { cn } from "@/lib/utils";
 import { imageHelpers } from "@/lib/image-helpers";
 import { ProviderTiming } from "@/lib/image-types";
 import { Label } from "@/components/ui/label";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ImageDisplayProps {
   provider: string;
@@ -188,4 +188,3 @@ export function ImageDisplay({
     </>
   );
 }
-
