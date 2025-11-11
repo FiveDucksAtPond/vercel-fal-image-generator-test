@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import supabase from "@/lib/supabase-admin";
+import { getBucketName } from "@/lib/bucket";
 
 export const runtime = "nodejs";
 
@@ -16,7 +17,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Supabase not configured" }, { status: 500 });
     }
 
-    const bucket = ((process.env.SUPABASE_BUCKET || "images").trim().replace(/[\r\n]/g, "")) || "images";
+    const bucket = getBucketName();
     const sb: any = supabase as any;
 
     let created = false;

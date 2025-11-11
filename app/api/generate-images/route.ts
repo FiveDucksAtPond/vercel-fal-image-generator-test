@@ -3,6 +3,7 @@ import { experimental_generateImage as generateImage } from "ai";
 import { createReplicate } from "@ai-sdk/replicate";
 import { ProviderKey } from "@/lib/provider-config";
 import supabase from "@/lib/supabase-admin";
+import { getBucketName, sanitizePublicUrl } from "@/lib/bucket";
 import { GenerateImageRequest } from "@/lib/api-types";
 
 export const runtime = "nodejs";
@@ -92,7 +93,7 @@ export async function POST(req: NextRequest) {
         finalImageUrl = (image as any)?.url ?? null;
       } else {
         const sb: any = supabase as any;
-        const bucket = ((process.env.SUPABASE_BUCKET || "images").trim().replace(/[\r\n]/g, "")) || "images";
+        const bucket = getBucketName();
         // Ensure bucket exists (ignore error if it already exists)
         try { await sb.storage.createBucket(bucket, { public: true }); } catch {}
         const filename = `${new Date().toISOString().replace(/[:.]/g, '-')}-${Math.random()
@@ -126,7 +127,7 @@ export async function POST(req: NextRequest) {
           } else {
             const { data: urlData } = sb.storage.from(bucket).getPublicUrl(path);
             const rawUrl = urlData?.publicUrl || null;
-            publicUrl = rawUrl ? rawUrl.replace(/%0D%0A|%0D|%0A/gi, "") : null;
+            publicUrl = sanitizePublicUrl(rawUrl);
             finalImageUrl = publicUrl || null;
           }
         }

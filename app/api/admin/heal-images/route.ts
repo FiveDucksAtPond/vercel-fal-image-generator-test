@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import supabase from "@/lib/supabase-admin";
+import { getBucketName, sanitizePublicUrl } from "@/lib/bucket";
 
 export const runtime = "nodejs";
 
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
 
     const limit = Math.min(Math.max(Number(rawLimit) || 50, 1), 500);
     const offset = Math.max(Number(rawOffset) || 0, 0);
-    const bucket = ((process.env.SUPABASE_BUCKET || "images").trim().replace(/[\r\n]/g, "")) || "images";
+    const bucket = getBucketName();
     const currentHost = getCurrentHost();
 
     const sb: any = supabase as any;
@@ -106,7 +107,7 @@ export async function POST(req: NextRequest) {
         });
         if (upErr) throw upErr;
         const { data: urlData } = sb.storage.from(bucket).getPublicUrl(path);
-        const publicUrl = urlData?.publicUrl || null;
+        const publicUrl = sanitizePublicUrl(urlData?.publicUrl || null);
         if (!publicUrl) throw new Error("no publicUrl returned");
         const { error: updErr } = await sb
           .from("user_generated_images")
