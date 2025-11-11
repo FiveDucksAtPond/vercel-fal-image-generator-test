@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
         finalImageUrl = (image as any)?.url ?? null;
       } else {
         const sb: any = supabase as any;
-        const bucket = process.env.SUPABASE_BUCKET || "images";
+        const bucket = ((process.env.SUPABASE_BUCKET || "images").trim().replace(/[\r\n]/g, "")) || "images";
         // Ensure bucket exists (ignore error if it already exists)
         try { await sb.storage.createBucket(bucket, { public: true }); } catch {}
         const filename = `${new Date().toISOString().replace(/[:.]/g, '-')}-${Math.random()
@@ -125,7 +125,8 @@ export async function POST(req: NextRequest) {
             console.warn("Supabase upload failed, will fall back to remote URL:", uploadError);
           } else {
             const { data: urlData } = sb.storage.from(bucket).getPublicUrl(path);
-            publicUrl = urlData?.publicUrl || null;
+            const rawUrl = urlData?.publicUrl || null;
+            publicUrl = rawUrl ? rawUrl.replace(/%0D%0A|%0D|%0A/gi, "") : null;
             finalImageUrl = publicUrl || null;
           }
         }

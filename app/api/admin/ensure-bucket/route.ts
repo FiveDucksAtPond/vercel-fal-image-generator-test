@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Supabase not configured" }, { status: 500 });
     }
 
-    const bucket = process.env.SUPABASE_BUCKET || "images";
+    const bucket = ((process.env.SUPABASE_BUCKET || "images").trim().replace(/[\r\n]/g, "")) || "images";
     const sb: any = supabase as any;
 
     let created = false;
@@ -49,4 +49,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: e?.message || "Server error" }, { status: 500 });
   }
 }
-

@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     const limit = Math.min(Math.max(Number(rawLimit) || 50, 1), 500);
     const offset = Math.max(Number(rawOffset) || 0, 0);
-    const bucket = process.env.SUPABASE_BUCKET || "images";
+    const bucket = ((process.env.SUPABASE_BUCKET || "images").trim().replace(/[\r\n]/g, "")) || "images";
     const currentHost = getCurrentHost();
 
     const sb: any = supabase as any;
@@ -132,4 +132,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: e?.message || "Server error" }, { status: 500 });
   }
 }
-
