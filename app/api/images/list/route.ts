@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import supabase from "@/lib/supabase-admin";
+import { getBucketName, sanitizePublicUrl } from "@/lib/bucket";
 
 export const runtime = "nodejs";
 
@@ -40,13 +41,41 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message || String(error) }, { status: 500 });
     }
 
-    const items = (data || []).map((row: any) => ({
+    let items = (data || []).map((row: any) => ({
       id: row.id,
       image_url: row.image_url,
       prompt: row.prompt ?? null,
       created_at: row.created_at,
       uuid: row.uuid ?? null,
     }));
+
+    // Fallback to Storage bucket when community feed is empty
+    if (!user_uuid && items.length === 0) {
+      try {
+        // Force community feed to use the standard 'images' bucket as requested
+        const bucket = 'images';
+        const sb: any = supabase as any;
+        const { data: files, error: listErr } = await sb.storage
+          .from(bucket)
+          .list("", { limit, offset, sortBy: { column: "updated_at", order: "desc" } });
+        if (!listErr && Array.isArray(files)) {
+          items = files
+            .filter((f: any) => f?.name && !String(f.name).endsWith("/"))
+            .map((f: any, idx: number) => {
+              const path = f.name as string;
+              const { data: urlData } = sb.storage.from(bucket).getPublicUrl(path);
+              const url = sanitizePublicUrl(urlData?.publicUrl || null);
+              return {
+                id: (offset + idx + 1),
+                image_url: url,
+                prompt: null,
+                created_at: f?.updated_at || f?.created_at || new Date().toISOString(),
+                uuid: null,
+              };
+            });
+        }
+      } catch {}
+    }
 
     const nextOffset = offset + items.length;
     const hasMore = items.length === limit;

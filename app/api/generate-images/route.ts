@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
       console.error(`${error} [requestId=${requestId}]`);
       return NextResponse.json({ error }, { status: 400 });
     }
-    // Enforce login on server too
+    // Enforce login
     if (!user_email || !user_uuid) {
       const error = "Authentication required";
       console.error(`${error} [requestId=${requestId}]`);

@@ -6,63 +6,91 @@
   .text-balance {
     text-wrap: balance;
   }
+  .font-work { font-family: 'Work Sans', var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
 }
 
 @layer base {
+  /* Milker heading font (drop Milker.woff2 into public/fonts) */
+  @font-face {
+    font-family: 'Milker';
+    src: url('/fonts/milker/Milker.otf') format('opentype');
+    font-weight: 400 800;
+    font-style: normal;
+    font-display: swap;
+  }
+  /* Work Sans for prompt input and suggestions */
+  @font-face {
+    font-family: 'Work Sans';
+    src: url('/fonts/work-sans/WOFF2/WorkSans-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Work Sans';
+    src: url('/fonts/work-sans/WOFF2/WorkSans-Medium.woff2') format('woff2');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
   :root {
-    /* Background: #8C8C8C -> hsl(0 0% 55%) */
-    --background: 0 0% 55%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    /* Primary reverted to near-black */
-    --primary: 240 5.9% 10%;
+    /* Higgsfield-inspired neon noir palette */
+    --background: 0 0% 4%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Vibrant purple as primary, cyan as accent */
+    --primary: 260 100% 65%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 70%;
+
+    --accent: 190 95% 55%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 85% 55%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+
+    --border: 0 0% 16%;
+    --input: 0 0% 16%;
+    --ring: 260 100% 65%;
+
+    --chart-1: 260 100% 65%;
+    --chart-2: 190 95% 55%;
+    --chart-3: 300 85% 60%;
+    --chart-4: 0 0% 70%;
+    --chart-5: 0 0% 40%;
+
     --radius: 0.5rem;
   }
   .dark {
-    --background: 240 10% 3.9%;
+    --background: 0 0% 4%;
     --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
+    --card: 0 0% 7%;
     --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
+    --popover: 0 0% 7%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
+    --primary: 260 100% 65%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 12%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 70%;
+    --accent: 190 95% 55%;
     --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 85% 55%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --border: 0 0% 16%;
+    --input: 0 0% 16%;
+    --ring: 260 100% 65%;
   }
 }
 
@@ -72,46 +100,46 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-image: url('/background.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    font-family: 'Milker', var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    letter-spacing: 0.02em;
+    /* Neon gradient field with subtle radial glows */
+    background:
+      radial-gradient(900px 600px at 80% -10%, hsl(260 100% 65% / 0.22), transparent 65%),
+      radial-gradient(900px 600px at 20% -10%, hsl(190 95% 55% / 0.18), transparent 65%),
+      radial-gradient(1200px 700px at 50% 120%, hsl(260 100% 65% / 0.12), transparent 70%),
+      linear-gradient(to bottom, hsl(0 0% 7%) 0%, hsl(0 0% 4%) 100%);
     background-attachment: fixed;
+  }
+  /* Apply Milker to all headings */
+  h1, h2, h3, h4, h5, .heading {
+    font-family: 'Milker', var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    letter-spacing: 0.03em;
+    font-weight: 700;
+  }
+
+  /* Ensure non-headings use normal (non-bold) weight by default */
+  body, p, span, a, li, label, input, textarea, select, button, small, strong:not([class*="font-"]) {
+    font-weight: 400;
+    letter-spacing: 0.02em;
   }
 }
 
-/* Cohesive panel style: subtle white gradient, soft border, gentle shadow */
-.panel {
+/* Glass panels for neon theme */
+.glass {
   position: relative;
   overflow: hidden;
   border-radius: 1rem;
-  background: linear-gradient(to bottom, rgba(255,255,255,0.98), rgba(255,255,255,0.92));
-  border: 1px solid rgba(255,255,255,0.55);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+  background: color-mix(in oklab, hsl(var(--card)) 60%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.45);
 }
-.panel::before {
+.glass::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, rgba(255,255,255,0.22), rgba(255,255,255,0));
-  pointer-events: none;
-}
-
-/* Dark panel variant to match the prompt window styling */
-.panel-dark {
-  position: relative;
-  overflow: hidden;
-  border-radius: 1rem; /* matches rounded-2xl */
-  color: white;
-  background: linear-gradient(to bottom, rgba(24,24,27,1), rgba(0,0,0,1)); /* from-zinc-900 to black */
-  border: 1px solid rgba(255,255,255,0.1); /* border-white/10 */
-  box-shadow: 0 20px 50px rgba(0,0,0,0.4); /* shadow-xl shadow-black/40 */
-}
-.panel-dark::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0), rgba(255,255,255,0)); /* overlay shader */
+  background: linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(255,255,255,0));
   pointer-events: none;
 }
 
@@ -186,3 +214,11 @@
   /* optional fade at edges for nicer look */
   mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
 }
+
+/* Neon gradient button */
+.btn-neon {
+  background: linear-gradient(135deg, hsl(260 100% 65%) 0%, hsl(190 95% 55%) 100%);
+  color: hsl(var(--primary-foreground));
+}
+.btn-neon:hover { opacity: 0.96; }
+.btn-neon:active { transform: translateY(0.5px); }

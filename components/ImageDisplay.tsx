@@ -162,7 +162,12 @@ export function ImageDisplay({
                 <Stopwatch startTime={timing.startTime} />
               </>
             ) : (
-              <ImageIcon className="h-12 w-12 text-zinc-300" />
+              <>
+                <ImageIcon className="h-12 w-12 text-zinc-300" />
+                <div className="mt-2 text-xs text-white/80">
+                  {provider}
+                </div>
+              </>
             )}
           </div>
         )}

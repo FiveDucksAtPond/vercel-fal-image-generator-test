@@ -43,7 +43,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
     prompt: string,
     providerInstances: ProviderInstance[]
   ) => {
-    // Enforce login: must have userProfile in localStorage
+    // Require login: must have userProfile in localStorage
     let profile: { email?: string; user_uuid?: string } | null = null;
     if (typeof window !== "undefined") {
       try {

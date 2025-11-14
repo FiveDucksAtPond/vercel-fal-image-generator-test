@@ -23,7 +23,7 @@ export function PromptInput({
   onSubmit,
 }: PromptInputProps) {
   const [input, setInput] = useState("");
-  const [suggestions, setSuggestions] = useState<Suggestion[]>(initSuggestions);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>(initSuggestions.slice(0, 4));
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -55,7 +55,7 @@ export function PromptInput({
   }, []);
 
   const updateSuggestions = () => {
-    setSuggestions(getRandomSuggestions());
+    setSuggestions(getRandomSuggestions(4));
   };
   const handleSuggestionSelect = (prompt: string) => {
     setInput(prompt);
@@ -124,7 +124,7 @@ export function PromptInput({
               >
                 <RefreshCw className="w-4 h-4 text-zinc-500 group-hover:opacity-70" />
               </button>
-              {suggestions.map((suggestion, index) => (
+              {suggestions.slice(0, 4).map((suggestion, index) => (
                 <button
                   key={index}
                   onClick={() => handleSuggestionSelect(suggestion.prompt)}
@@ -163,4 +163,3 @@ export function PromptInput({
     </div>
   );
 }
-

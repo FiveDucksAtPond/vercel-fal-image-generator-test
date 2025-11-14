@@ -121,3 +121,14 @@ If you prefer managing environment variables via Vercel:
 
 Contributions are welcome. Feel free to open issues or PRs.
 
+
+## Dev Admin Bypass (No Login)
+To skip manual login on localhost and use a stock account automatically:
+
+- Set these env vars in `.env.local`:
+  - `NEXT_PUBLIC_DEV_ADMIN_BYPASS=true`
+  - `DEV_AUTH_SKIP_EMAIL_CONFIRM=true`
+  - `NEXT_PUBLIC_DEV_STOCK_EMAIL=savelii@gaxos.ai` (optional; defaults to this value)
+  - `NEXT_PUBLIC_DEV_STOCK_PASSWORD=dev-password-1234` (optional; defaults to this value)
+- Ensure `SUPABASE_SERVICE_ROLE_KEY` is set; the app uses it to create the user if missing.
+- Start the dev server and open http://localhost:3000. The app will auto-create and sign in the stock account, then hydrate the profile for API requests.

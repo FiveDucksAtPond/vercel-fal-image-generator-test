@@ -3,6 +3,7 @@ import { supabaseBrowser } from "@/lib/supabase-browser";
 import { ArrowUpRight, ArrowUp, RefreshCw } from "lucide-react";
 import { getRandomSuggestions, Suggestion } from "@/lib/suggestions";
 import { Spinner } from "@/components/ui/spinner";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +25,7 @@ export function PromptInput({
   onSubmit,
 }: PromptInputProps) {
   const [input, setInput] = useState("");
-  const [suggestions, setSuggestions] = useState<Suggestion[]>(initSuggestions);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>(initSuggestions.slice(0, 4));
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -70,7 +71,7 @@ export function PromptInput({
   }, []);
 
   const updateSuggestions = () => {
-    setSuggestions(getRandomSuggestions());
+    setSuggestions(getRandomSuggestions(4));
   };
   const handleSuggestionSelect = (prompt: string) => {
     setInput(prompt);
@@ -110,7 +111,7 @@ export function PromptInput({
 
   return (
     <div className="w-full mb-8 max-w-4xl mx-auto">
-      <div className="relative overflow-hidden rounded-2xl p-8 text-white bg-gradient-to-b from-zinc-900 to-black border border-white/10 ring-1 ring-white/10 shadow-xl shadow-black/40">
+      <div className="relative overflow-hidden rounded-2xl p-8 text-white border border-white/10 glass">
         <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-transparent" />
         {!isLoggedIn && (
           <div className="mb-3 text-sm text-blue-700 bg-blue-50 border border-blue-200 rounded px-3 py-2 flex items-center justify-between">
@@ -130,7 +131,7 @@ export function PromptInput({
             onKeyDown={handleKeyDown}
             placeholder="Enter your prompt here"
             rows={6}
-            className="text-lg md:text-xl leading-relaxed bg-transparent border-none p-0 resize-none placeholder:text-zinc-300 text-white focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[10rem]"
+            className="text-lg md:text-xl leading-relaxed tracking-normal bg-transparent border-none p-0 resize-none placeholder:text-zinc-300 text-white focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[10rem] font-work"
           />
           <div className="flex items-center justify-between pt-1">
             <div className="flex items-center justify-between space-x-2">
@@ -140,12 +141,12 @@ export function PromptInput({
               >
                 <RefreshCw className="w-4 h-4 text-zinc-500 group-hover:opacity-70" />
               </button>
-              {suggestions.map((suggestion, index) => (
+              {suggestions.slice(0, 4).map((suggestion, index) => (
                 <button
                   key={index}
                   onClick={() => handleSuggestionSelect(suggestion.prompt)}
                   className={cn(
-                    "flex items-center justify-between px-2 rounded-lg py-1 bg-background text-sm hover:opacity-70 group transition-opacity duration-200",
+                    "flex items-center justify-between px-2 rounded-lg py-1 bg-background text-sm hover:opacity-70 group transition-opacity duration-200 whitespace-nowrap max-w-[240px] overflow-hidden",
                     index > 2
                       ? "hidden md:flex"
                       : index > 1
@@ -154,25 +155,27 @@ export function PromptInput({
                   )}
                   >
                   <span>
-                    <span className="text-zinc-900 text-xs sm:text-sm">
+                    <span className="text-white text-xs sm:text-sm font-work truncate">
                       {suggestion.text.toLowerCase()}
                     </span>
                   </span>
-                  <ArrowUpRight className="ml-1 h-2 w-2 sm:h-3 sm:w-3 text-zinc-500 group-hover:opacity-70" />
+                  <ArrowUpRight className="ml-1 h-2 w-2 sm:h-3 sm:w-3 text-white/70 group-hover:opacity-80 shrink-0" />
                 </button>
               ))}
             </div>
-            <button
-              onClick={handleSubmit}
-              disabled={isLoading || !input.trim()}
-              className="h-8 w-8 rounded-full bg-black flex items-center justify-center disabled:opacity-50"
-            >
+            <Button onClick={handleSubmit} disabled={isLoading || !input.trim()} size="lg">
               {isLoading ? (
-                <Spinner className="w-3 h-3 text-white" />
+                <div className="flex items-center gap-2">
+                  <Spinner className="w-4 h-4 text-white" />
+                  Generating
+                </div>
               ) : (
-                <ArrowUp className="w-5 h-5 text-white" />
+                <div className="flex items-center gap-2">
+                  Generate
+                  <ArrowUp className="w-4 h-4 text-white" />
+                </div>
               )}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

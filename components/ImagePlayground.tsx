@@ -14,7 +14,6 @@ import {
 import { Suggestion } from "@/lib/suggestions";
 import { useImageGeneration } from "@/hooks/use-image-generation";
 import { Header } from "./Header";
-import { HomeGallery } from "@/components/HomeGallery";
 
 interface ProviderInstance {
   id: string;
@@ -158,7 +157,7 @@ export function ImagePlayground({
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <Header />
-        <div className="flex items-center justify-center min-h-[100vh]">
+        <div className="flex items-center justify-center py-10">
           <PromptInput
             onSubmit={handlePromptSubmit}
             isLoading={isLoading}
@@ -185,28 +184,17 @@ export function ImagePlayground({
               </div>
             </div>
             <div className="panel-dark mt-6 p-4 md:p-5 text-white">
-              <div className="text-xs uppercase tracking-wide text-white/70 mb-1">
+              <div className="text-xs uppercase tracking-wide text-white/70 mb-1 text-center font-work">
                 Your Prompt{isLoading ? " (Generating...)" : ":"}
               </div>
-              <div className="text-sm md:text-base whitespace-pre-wrap">
+              <div className="text-sm md:text-base whitespace-pre-wrap text-center font-work">
                 {activePrompt}
               </div>
             </div>
           </>
         )}
       </div>
-      {/* Constrained semi-transparent background for Community Gallery */}
-      <section className="max-w-7xl mx-auto py-10 pb-16 px-4 sm:px-6 lg:px-8">
-        <h2 className="text-lg font-semibold mb-3">Community Creations</h2>
-        <p className="text-sm text-black mb-4">Scroll to explore recent images from the community.</p>
-        <div className="bg-white/50">
-          {/* Lazy, infinite-scroll grid of user's generated images (appears below the fold) */}
-          {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-          {/* @ts-ignore */}
-          <HomeGallery />
-        </div>
-      </section>
-      <div className="max-w-7xl mx-auto"></div>
+      
     </div>
   );
 }
