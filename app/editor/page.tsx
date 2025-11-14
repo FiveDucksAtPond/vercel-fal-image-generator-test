@@ -53,7 +53,7 @@ export default function EditorPage() {
   };
   const onCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!maskMode) return;
-    const rect = (e.target as HTMLCanvasElement).getBoundingClientClientRect?.() || (e.target as HTMLCanvasElement).getBoundingClientRect();
+    const rect = (e.target as HTMLCanvasElement).getBoundingClientRect() || (e.target as HTMLCanvasElement).getBoundingClientRect();
     const r = rect as DOMRect;
     moveDraw(e.clientX - r.left, e.clientY - r.top);
   };
@@ -355,3 +355,4 @@ export default function EditorPage() {
     </main>
   );
 }
+
